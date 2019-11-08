@@ -2,17 +2,17 @@ import { call, select, put, all, takeLatest } from 'redux-saga/effects';
 import { toast } from 'react-toastify';
 
 import api from '../../../services/api';
+import history from '../../../services/history';
 
 import { addToCartSuccess, updateAmountSuccess } from './actions';
 import { formatPrice } from '../../../util/format';
 
-//*(generator) - significa o mesmo que async await, mas é mais potente.
+//* (generator) - significa o mesmo que async await, mas é mais potente.
 // yield = await
-function* addToCart({ id }) { 
-
-  const productExists = yield select(
-    state => state.cart.find(p => p.id === id),
-  )
+function* addToCart({ id }) {
+  const productExists = yield select(state =>
+    state.cart.find(p => p.id === id)
+  );
 
   const stock = yield call(api.get, `/stock/${id}`);
 
@@ -38,12 +38,13 @@ function* addToCart({ id }) {
     };
 
     yield put(addToCartSuccess(data));
+
+    // redirect user to cart view
+    history.push('/cart');
   }
- 
 }
 
 function* updateAmount({ id, amount }) {
-
   if (amount <= 0) return;
 
   const stock = yield call(api.get, `stock/${id}`);
@@ -59,5 +60,5 @@ function* updateAmount({ id, amount }) {
 
 export default all([
   takeLatest('@cart/ADD_REQUEST', addToCart),
-  takeLatest('@cart/UPDATE_AMOUNT_REQUEST', updateAmount)
+  takeLatest('@cart/UPDATE_AMOUNT_REQUEST', updateAmount),
 ]);
